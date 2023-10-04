@@ -21,10 +21,10 @@ const unsigned int screenHeight = desktop.height;
 //unsigned int screenWidth = 1200;
 //unsigned int screenHeight = 800;
 
-float screenWidthF = (float)screenWidth + 20.0f;
-float screenHeightF = (float)screenHeight + 20.0f;
+float screenWidthF = (float)screenWidth + 0.0f;
+float screenHeightF = (float)screenHeight + 0.0f;
 
-const unsigned int countBall = 200;
+const unsigned int countBall = 100;
 const float sizeBall = 5.5f;
 const float maxSpeed = 3;
 const float distance = 255;
@@ -59,9 +59,9 @@ public:
 		int g = rndi(32, 255);
 		int b = rndi(32, 255);
 
-		setFillColor(sf::Color(r, g, b, 64));
+		setFillColor(sf::Color(r, g, b, 128));
 		setOutlineColor(sf::Color(r, g, b, 255));
-		setOutlineThickness(1);
+		setOutlineThickness(3);
 
 		setPosition(sf::Vector2f(rnd(0, screenWidthF), rnd(0, screenHeightF)));
 
@@ -77,13 +77,13 @@ public:
 
 class Star : public sf::CircleShape {
 public:
-	float speed = rnd(0.05, 0.5);
+	float speed = rnd(0.1, 0.5);
 
 public:
 	Star()
-		: sf::CircleShape(0.3) {
+		: sf::CircleShape(0.5) {
 
-		unsigned int alpha = (int)round(255 - (0.5 - speed) * 2 * 255);
+		unsigned int alpha = (int)round(speed*2*255);
 
 		setFillColor(sf::Color(255, 255, 255, alpha));
 
@@ -94,13 +94,14 @@ public:
 
 int main() {
 	sf::ContextSettings settings;
-	settings.antialiasingLevel = 8;
 	sf::RenderWindow window;
-	window.create(sf::VideoMode(screenWidth, screenHeight), "Neuro", sf::Style::None);
+	window.create(sf::VideoMode(screenWidth, screenHeight), "Neuro", sf::Style::None, sf::ContextSettings(0,0,8));
 	window.clear(sf::Color::Black);
 	window.setVerticalSyncEnabled(true);
 	window.setActive(true);
 	window.setMouseCursorVisible(false);
+
+	//settings.antialiasingLevel = 8;
 
 	//
 
@@ -228,22 +229,22 @@ int main() {
 			//
 
 			if (x > screenWidthF) {
-				x = screenWidthF;
+				//x = screenWidthF;
 				speedX = -speedX;
 			}
 
-			if (x < -20) {
-				x = -20;
+			if (x < 0) {
+				//x = -20;
 				speedX = -speedX;
 			}
 
 			if (y > screenHeightF) {
-				y = screenHeightF;
+				//y = screenHeightF;
 				speedY = -speedY;
 			}
 
-			if (y < -20) {
-				y = -20;
+			if (y < 0) {
+				//y = -20;
 				speedY = -speedY;
 			}
 
