@@ -14,22 +14,25 @@
 //HDC hDC = GetDC(nullptr);
 //const float refreshCorr = 60.0f / (float)GetDeviceCaps(hDC, VREFRESH);
 
-sf::VideoMode desktop = sf::VideoMode::getDesktopMode();
-const unsigned int screenWidth = desktop.width;
-const unsigned int screenHeight = desktop.height;
+//sf::VideoMode desktop = sf::VideoMode::getDesktopMode();
 
-//unsigned int screenWidth = 1200;
-//unsigned int screenHeight = 800;
+const int screenWidth = 1920;
+const int screenHeight = 1080;
 
-float screenWidthF = (float)screenWidth + 0.0f;
-float screenHeightF = (float)screenHeight + 0.0f;
+const int cFrames = 60 * (6 * 60 + 36); // 23760
+int nFrame = 0;
 
-const unsigned int countBall = 100;
-const float sizeBall = 5.5f;
-const float maxSpeed = 3;
+const int countBall = 150;
+const int countStar = 500;
+const float sizeBall = 6.5;
+const float maxSpeed = 2;
 const float distance = 255;
 
-const unsigned int countStar = 500;
+const float screenWidthF = screenWidth + distance;
+const float screenHeightF = screenHeight + distance;
+
+const float screenWidthF0 = -distance;
+const float screenHeightF0 = -distance;
 
 bool step = true;
 
@@ -40,6 +43,7 @@ const float pi180 = 180.0f / 3.141592f;
 float rnd(float min, float max) {
 	return min + (max - min) * static_cast <float> (std::rand()) / (static_cast <float> (RAND_MAX));
 }
+
 int rndi(int min, int max) {
 	return min + std::rand() % (max - min + 1);
 }
@@ -61,9 +65,9 @@ public:
 
 		setFillColor(sf::Color(r, g, b, 128));
 		setOutlineColor(sf::Color(r, g, b, 255));
-		setOutlineThickness(3);
+		setOutlineThickness(4);
 
-		setPosition(sf::Vector2f(rnd(0, screenWidthF), rnd(0, screenHeightF)));
+		setPosition(sf::Vector2f(rnd(screenWidthF0, screenWidthF), rnd(screenWidthF0, screenHeightF)));
 
 		setOrigin(getRadius(), getRadius());
 
@@ -83,7 +87,7 @@ public:
 	Star()
 		: sf::CircleShape(0.5) {
 
-		unsigned int alpha = (int)round(speed*2*255);
+		unsigned int alpha = (int)round(speed * 2 * 255);
 
 		setFillColor(sf::Color(255, 255, 255, alpha));
 
@@ -92,17 +96,22 @@ public:
 	}
 };
 
+
 int main() {
-	sf::ContextSettings settings;
 	sf::RenderWindow window;
-	window.create(sf::VideoMode(screenWidth, screenHeight), "Neuro", sf::Style::None, sf::ContextSettings(0,0,8));
-	window.clear(sf::Color::Black);
+	sf::ContextSettings settings;
+	settings.antialiasingLevel = 8;
+	window.create(sf::VideoMode(screenWidth, screenHeight), "Neuro", sf::Style::None, settings);
 	window.setVerticalSyncEnabled(true);
 	window.setActive(true);
 	window.setMouseCursorVisible(false);
 
-	//settings.antialiasingLevel = 8;
+	sf::Texture tex;
+	tex.create(screenWidth, screenHeight);
 
+	//sf::RenderTexture renderTexture;
+	//renderTexture.create(screenWidth, screenHeight);
+	//renderTexture.setSmooth(false);
 	//
 
 	std::srand(std::time(nullptr));
@@ -150,6 +159,7 @@ int main() {
 
 
 		window.clear(Black);
+		//renderTexture.clear(Black);
 
 		for (size_t i = 0; i < countStar; ++i) {
 
@@ -168,6 +178,7 @@ int main() {
 			myStars[i].setPosition(x, y);
 
 			window.draw(myStars[i]);
+			//renderTexture.draw(myStars[i]);
 		}
 
 		CustomCircle(&arrayFrom)[countBall] = step ? myBalls : myBalls2;
@@ -196,7 +207,6 @@ int main() {
 				dx = x2 - x;
 				if (abs(dx) > distance)
 					continue;
-
 				dy = y2 - y;
 				if (abs(dy) > distance)
 					continue;
@@ -211,41 +221,58 @@ int main() {
 				{
 					sf::Vertex(sf::Vector2f(x, y)),
 					sf::Vertex(sf::Vector2f(x2, y2)),
+
+
+					sf::Vertex(sf::Vector2f(x + 1, y)),
+					sf::Vertex(sf::Vector2f(x2 - 1, y2)),
+
+					sf::Vertex(sf::Vector2f(x - 1, y)),
+					sf::Vertex(sf::Vector2f(x2 + 1, y2)),
+
+
+					sf::Vertex(sf::Vector2f(x, y + 1)),
+					sf::Vertex(sf::Vector2f(x2, y2 - 1)),
+
+					sf::Vertex(sf::Vector2f(x, y - 1)),
+					sf::Vertex(sf::Vector2f(x2, y2 + 1)),
+
 				};
 
 				sf::Color c1 = myBalls[i].getOutlineColor();
 				sf::Color c2 = myBalls[j].getOutlineColor();
 
-				c1.a = 255 - dist;
-				c2.a = 255 - dist;
+				c1.a = (int)(255 - dist);
+				c2.a = (int)(255 - dist);
 
-				line[0].color = c1;
-				line[1].color = c2;
+				for (int k = 0; k < 10; k += 2) {
+					line[k].color = c1;
+					line[k + 1].color = c2;
+				}
 
-				window.draw(line, 2, sf::Lines);
-				//
+				window.draw(line, 10, sf::Lines);
+				//renderTexture.draw(&line[0], 10, sf::Lines);
 
 			}
 			//
 
 			if (x > screenWidthF) {
-				//x = screenWidthF;
-				speedX = -speedX;
+				x = screenWidthF0;
+				//speedX = -speedX;
 			}
 
-			if (x < 0) {
-				//x = -20;
-				speedX = -speedX;
+			if (x < screenWidthF0) {
+				x = screenWidthF;
+				//speedX = -speedX;
 			}
 
 			if (y > screenHeightF) {
-				//y = screenHeightF;
-				speedY = -speedY;
+				y = screenHeightF0;
+				//speedY = -speedY;
 			}
 
-			if (y < 0) {
-				//y = -20;
-				speedY = -speedY;
+			if (y < screenHeightF0) {
+				y = screenHeightF;
+				//speedY = -speedY;
 			}
 
 			x += speedX;
@@ -253,6 +280,7 @@ int main() {
 			//
 
 			window.draw(arrayFrom[i]);
+			//renderTexture.draw(arrayFrom[i]);
 
 			arrayTo[i].setPosition(x, y);
 			arrayTo[i].speedX = speedX;
@@ -261,6 +289,13 @@ int main() {
 		}
 
 		window.display();
+
+		//tex.update(window);
+		//tex.copyToImage().saveToFile("frames/" + std::to_string(nFrame) + ".png");
+
+		//++nFrame;
+		//if (nFrame > cFrames)
+		//	window.close();
 
 	}
 
